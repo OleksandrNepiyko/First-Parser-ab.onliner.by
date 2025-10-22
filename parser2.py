@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import json
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -44,19 +45,27 @@ for brand in brands_list:
     time.sleep(3)
     links_to_reviews = driver.find_elements(By.CLASS_NAME, "vehicle-form__offers-stub")
     review_links = [url.get_attribute('href') for url in links_to_reviews if url.get_attribute('href')]
-    for review_url in review_links:
-        if review_url:
-            review_page = driver.get(review_url)
-            time.sleep(3)
-            rate = driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div/div/div/div/div[2]/div/div/div/div/div[5]/div/div/div[2]/div/div/div[1]/div/div/div[2]/div").text
-            parse_date = date.today()
-            description = driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div/div/div/div/div[2]/div/div/div/div/div[5]/div/div/div[1]/div/div/div/p").text
-            print(rate)
-            print(parse_date)
-            print(description)
-            driver.back()
-            time.sleep(2)
-
+    with open ('ab_onliner_by.json', 'w', encoding='utf-8') as f:
+        f.write('[')
+        for review_url in review_links:
+            if review_url:
+                review_page = driver.get(review_url)
+                time.sleep(3)
+                rate = driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div/div/div/div/div[2]/div/div/div/div/div[5]/div/div/div[2]/div/div/div[1]/div/div/div[2]/div").text
+                parse_date = date.today()
+                description = driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div/div/div/div/div[2]/div/div/div/div/div[5]/div/div/div[1]/div/div/div/p").text
+                print(rate)
+                print(parse_date)
+                print(description)
+                review_parameters = {
+                    "rate": rate,
+                    "parse_date": str(parse_date),
+                    "description": description
+                }
+                f.write(json.dumps(review_parameters, ensure_ascii=False, indent=4) + ',' + '\n')
+                driver.back()
+                time.sleep(2)
+    f.write(']')
         # author_name =
         # review_date =
         # photo =
